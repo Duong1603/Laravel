@@ -24,9 +24,9 @@
                     <th scope="col">Name</th>
                     <th scope="col">Image</th>
                     <th scope="col">Decription</th>
-                    <th scope="col">Company</th>
+                    <!-- <th scope="col">Company</th> -->
                     <th scope="col">Product_on</th>
-                    <th scope="col">Function</th>
+                    <th colspan="2">Function</th>
                 </tr>
             </thead>
             <tbody>
@@ -34,14 +34,14 @@
                 <tr>
                     <td>{{$car['id']}}</td>
                     <td>{{$car['model']}}</td>
-                    <td><img width="100px" height="100px" class="img-thumnail" src="/image/{{ $car['images']}}" alt="">
+                    <td><img width=" 100px" height="100px" class="img-thumnail" src="/image/{{ $car['images']}}" alt="">
                     </td>
                     <td>{{$car['decription']}}</td>
                     <td>{{$car['produced_on']}}</td>
                     <td><a href="/{{$car["id"]}}/Edit" role="button" onclick="return confirm('do you want Update?')"
                             class="btn btn-primary">Edit</a></td>
                     <td><a href="/Delete/{{$car["id"]}}" role="button" onclick="return confirm('do you want Delete?')"
-                            class="btn btn-danger">Delete</a></td>
+                            class="btn btn-danger">D elete</a></td>
                 </tr>
                 @endforeach
             </tbody>

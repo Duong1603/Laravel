@@ -53,7 +53,6 @@
                 <select name="mf_id">
                     @isset($prop)
                     @foreach ($prop as $mf){
-
                     <option value="{{$mf->id}}" {{isset($car) && $car-> mf_id === $mf->id ? 'selected': ''}}>
                         {{$mf->mf_name}}</option>
                     }
