@@ -71,7 +71,7 @@ class CarController extends Controller
         $car->decription = $request->decription;
         $car->model = $request->model;
         $car->produced_on = $request->produced_on;
-        $car->mf_id = $request->mf_id;
+        // $car->mf_id = $request->mf_id;
         $car->images = $name;
         $car->save();
         if ($car) {

@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Validator;
+
 use Illuminate\Http\Request;
 use App\Models\Car;
-use App\Http\Resources\Car as CarResouces;
-use Nette\Utils\Validators;
 
+use Illuminate\Auth\Events\Validated;
+use Illuminate\Http\Response;
 class ApiController extends Controller
 {
     /**
@@ -16,9 +18,16 @@ class ApiController extends Controller
      */
     public function index()
     {
+      
+
+        // return response()->json($cars, Response::HTTP_OK);
         $cars = Car::all();
-    
-        return CarResouces::collection($cars);
+        if (count($cars) > 0) {
+            return response()->json(["status" =>"200", "success" => true, "count" => count($cars), "data" => $cars]);
+        } else {
+            return response()->json(["status" => "failed", "success" => false, "message" => "Whoops! no record found"]);
+        }
+        // return $cars;
     }
 
     /**
@@ -38,45 +47,46 @@ class ApiController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
-    {
-        $name = '';
+    { {
+            $validation = Validator::make(
+                $request->all(),
+                [
+                    'decription' => 'required',
+                    'model' => 'required',
+                    'produced_on' => 'required|date',
+                    'images' => 'mimes:jpeg,jpg,png,gif|max:10000'
+                ]
+            );
 
-        if ($request->hasFile('image')) {
-            $this->validate($request, [
-                'image' => 'mimes:jpg,png,jpeg|max:4000',
-            ], [
-                'image.mimes' => 'Chỉ chấp nhận files ảnh',
-                'image.max' => 'Chỉ chấp nhận files ảnh dưới 2Mb',
+            if ($validation->fails()) {
+                $response = array('status' => 'error', 'errors' => $validation->errors()->toArray());
+                return response()->json($response);
+            }
+            //nếu dùng $this->validate() thì lấy về lỗi: $errors = $validate->errors();
 
-            ]);
-            $file = $request->file(('image'));
-            $name = time() . '_' . $file->getClientOriginalName();
-            $destinationPath = public_path('image');
-            $file->move($destinationPath, $name);
+            //kiểm tra file tồn tại
+            $name = '';
+
+            if ($request->hasFile('image')) {
+                $file = $request->file('image');
+                $name = time() . '_' . $file->getClientOriginalName();
+                $destinationPath = public_path('image'); //project\public\car, //public_path(): trả về đường dẫn tới thư mục public
+                $file->move($destinationPath, $name); //lưu hình ảnh vào thư mục public/images/cars
+            }
+
+            $car = new Car();
+            $car->decription = $request->decription;
+            $car->model = $request->model;
+            $car->produced_on = $request->produced_on;
+            // $car -> name = $request->name;
+            $car->images = $name;
+            $car->save();
+            if ($car) {
+                return response()->json(["status" => "200", "success" => true, "message" => "car record created successfully", "data" => $car]);
+            } else {
+                return response()->json(["status" => "failed", "success" => false, "message" => "Whoops! failed to create."]);
+            }
         }
-        $this->validate($request, [
-            'decription' => 'required',
-            'model' => 'required',
-            'produced_on' => 'required|date',
-        ], [
-            'decription.required' => 'Bạn chưa nhập mô tả',
-            'model.required' => 'Bạn chưa nhập model',
-            'produced_on.required' => 'Bạn chưa nhập ngày sản xuất',
-            'produced_on.date' => 'Cột produced_on phải là kiểu ngày!'
-        ]);
-        $car = new Car();
-        $car->decription = $request->decription;
-        $car->model = $request->model;
-        $car->produced_on = $request->produced_on;
-        $car->mf_id = $request->mf_id;
-        $car->images = $name;
-        $car->save();
-        if ($car) {
-            return response()->json(["status" => $this->status, "success" => true, "message" => "car record created successfully", "data" => $car]);
-        } else {
-            return response()->json(["status" => "failed", "success" => false, "message" => "Whoops! failed to create."]);
-        }
-        return redirect()->route('cars.index')->with('success', 'Bạn đã thêm thành công');
     }
 
     /**
@@ -87,7 +97,7 @@ class ApiController extends Controller
      */
     public function show($id)
     {
-        //
+
     }
 
     /**
@@ -110,7 +120,46 @@ class ApiController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        {
+            $validation = Validator::make(
+                $request->all(),
+                [
+                    'decription' => 'required',
+                    'model' => 'required',
+                    'produced_on' => 'required|date',
+                    'images' => 'mimes:jpeg,jpg,png,gif|max:10000'
+                ]
+            );
+
+            if ($validation->fails()) {
+                $response = array('status' => 'error', 'errors' => $validation->errors()->toArray());
+                return response()->json($response);
+            }
+            //nếu dùng $this->validate() thì lấy về lỗi: $errors = $validate->errors();
+
+            //kiểm tra file tồn tại
+            $name = '';
+
+            if ($request->hasFile('image')) {
+                $file = $request->file('image');
+                $name = time() . '_' . $file->getClientOriginalName();
+                $destinationPath = public_path('image'); //project\public\car, //public_path(): trả về đường dẫn tới thư mục public
+                $file->move($destinationPath, $name); //lưu hình ảnh vào thư mục public/images/cars
+            }
+
+            $car = Car::find($id);
+            $car->decription = $request->decription;
+            $car->model = $request->model;
+            $car->produced_on = $request->produced_on;
+            // $car -> name = $request->name;
+            $car->images = $name;
+            $car->save();
+            if ($car) {
+                return response()->json(["status" => "200", "success" => true, "message" => "car record created successfully", "data" => $car]);
+            } else {
+                return response()->json(["status" => "failed", "success" => false, "message" => "Whoops! failed to create."]);
+            }
+        }
     }
 
     /**
@@ -121,6 +170,8 @@ class ApiController extends Controller
      */
     public function destroy($id)
     {
-        //
+        Car::where('id', $id)->delete();
+        return redirect("/cars")->with('status', 'Delete success');
     }
+
 }
